@@ -1,15 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class NewBehaviourScript : MonoBehaviour {
+public class P1Movement : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	//super samarai massacre! 
+	//blah
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	//Dustin is a hoolaWHAT!!!
+	
 	}
 }
