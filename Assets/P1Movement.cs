@@ -9,19 +9,24 @@ public class P1Movement : MonoBehaviour
     private float fallSpeed;
     public float gravity;
     private bool blockTouch;
+    public float wallThrust;
+    public int wallJumpTime;
 
     void Start()
     {
         fallSpeed = jumpSpeed * (-1);
         blockTouch = false;
+        wallJumpTime = 0;
     }
 
     void FixedUpdate()
     {
         CharacterController controller = GetComponent<CharacterController>();
+        Rigidbody rBody = GetComponent<Rigidbody>();
 
         movement.x = Input.GetAxis("Left Stick X Axis") * moveSpeed;
 
+        //Jump
         if (controller.isGrounded)
         {
             movement.y = 0;
@@ -29,14 +34,28 @@ public class P1Movement : MonoBehaviour
                 movement.y = jumpSpeed;
         }
 
+        //Wall Jump
         if ((blockTouch == true) && (controller.isGrounded == false))
         {
             if (Input.GetButton("A Button"))
-                movement.y = jumpSpeed;
-            print("Wall Jump!");
+            {
+                if (movement.x > 0) //Player is going right
+                {
+                    movement.y = jumpSpeed;
+                }
+                else if (movement.x < 0) //Player is going left
+                {
+                    movement.y = jumpSpeed;
+                }
+            }
         }
 
+        //Movement
+        if ((controller.velocity.y == 0) && (controller.isGrounded == false))
+            movement.y = 0;
         movement.y -= gravity * Time.deltaTime;
+        if (movement.y < fallSpeed)
+            movement.y = fallSpeed;
         controller.Move(movement * Time.deltaTime);
 	}
 
