@@ -3,49 +3,52 @@ using System.Collections;
 
 public class P1Movement : MonoBehaviour
 {
-    private Rigidbody player;
+    private Vector3 movement = Vector3.zero;
     public float moveSpeed;
     public float jumpSpeed;
     private float fallSpeed;
     public float gravity;
+    private bool blockTouch;
 
     void Start()
     {
-        player = GetComponent<Rigidbody>();
         fallSpeed = jumpSpeed * (-1);
+        blockTouch = false;
     }
 
     void FixedUpdate()
     {
         CharacterController controller = GetComponent<CharacterController>();
 
-        //Storing value from moving left joystick
-        float moveHorizontal = Input.GetAxis("Left Stick X Axis");
-        float moveVertical = player.velocity.y;
+        movement.x = Input.GetAxis("Left Stick X Axis") * moveSpeed;
 
-        //Detecting whether or not jump button was pressed, if the player was touching the ground, and if a jump should take place
-        if ((Input.GetButtonDown("A Button")) && (controller.isGrounded))
-            moveVertical = jumpSpeed;
-        else if (controller.isGrounded)
+        if (controller.isGrounded)
         {
-            moveVertical = 0.001f;
-            print("Grounded!");
-        }
-        else
-        {
-            moveVertical -= gravity; //crazy gravity equation
-            if (moveVertical < fallSpeed)
-                moveVertical = fallSpeed;
+            movement.y = 0;
+            if (Input.GetButton("A Button"))
+                movement.y = jumpSpeed;
         }
 
-        //Moving the player
-        Vector3 movement = new Vector3(moveHorizontal, moveVertical, 0.0f);
-        player.transform.Translate(movement*Time.deltaTime*moveSpeed);
+        if ((blockTouch == true) && (controller.isGrounded == false))
+        {
+            if (Input.GetButton("A Button"))
+                movement.y = jumpSpeed;
+            print("Wall Jump!");
+        }
+
+        movement.y -= gravity * Time.deltaTime;
+        controller.Move(movement * Time.deltaTime);
 	}
 
-    //void OnCollisionEnter(Collision collision)
-    //{
-    //    if (collision.gameObject.tag == "Floor")
-    //        touchFloor = true;
-    //}
+    void OnTriggerStay(Collider collider)
+    {
+        if (collider.gameObject.tag == "Block")
+            blockTouch = true;
+    }
+
+    void OnTriggerExit (Collider collider)
+    {
+        if (collider.gameObject.tag == "Block")
+            blockTouch = false;
+    }
 }
