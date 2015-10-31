@@ -84,6 +84,7 @@
     <Compile Include="Assets\Character\AngryMellow.cs" />
     <Compile Include="Assets\Character\Character.cs" />
     <Compile Include="Assets\Character\ChipperMellow.cs" />
+    <Compile Include="Assets\Movement\MovementBehaviour.cs" />
     <Compile Include="Assets\Scripts\AttackBehaviour.cs" />
     <Compile Include="Assets\Scripts\FakeTest.cs" />
     <Compile Include="Assets\Scripts\NewBehaviourScript.cs" />
