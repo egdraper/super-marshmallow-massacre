@@ -13,6 +13,9 @@ public class P1Movement : MonoBehaviour
     private int wallJumpTime;
     public float wallJumpTimeDuration;
 
+    public string leftJoyXAxis = "Left Stick X Axis P1";
+    public string aButton = "A Button P1";
+
     void Start()
     {
         fallSpeed = jumpSpeed * (-1);
@@ -27,7 +30,7 @@ public class P1Movement : MonoBehaviour
 
         if ((wallJumpTime == 0) || (wallJumpTime > wallJumpTimeDuration))
         {
-            movement.x = Input.GetAxis("Left Stick X Axis") * moveSpeed;
+            movement.x = Input.GetAxis(leftJoyXAxis) * moveSpeed;
             wallJumpTime = 0;
         }
         else
@@ -37,14 +40,17 @@ public class P1Movement : MonoBehaviour
         if (controller.isGrounded)
         {
             movement.y = 0;
-            if (Input.GetButton("A Button"))
+            if (Input.GetButton(aButton))
+            {
                 movement.y = jumpSpeed;
+                Debug.Log(Input.GetJoystickNames());
+            }
         }
 
         //Wall Jump and Wall Slide
         if ((blockTouch == true) && (controller.isGrounded == false))
         {
-            if (Input.GetButton("A Button"))
+            if (Input.GetButton(aButton))
             {
                 if (movement.x > 0) //Player is going right
                 {
