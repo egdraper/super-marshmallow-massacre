@@ -23,7 +23,7 @@ public class P1Movement : MonoBehaviour
         wallJumpTime = 0;
     }
 
-    void FixedUpdate()
+    void Update()
     {
         CharacterController controller = GetComponent<CharacterController>();
         Rigidbody rBody = GetComponent<Rigidbody>();
@@ -40,17 +40,17 @@ public class P1Movement : MonoBehaviour
         if (controller.isGrounded)
         {
             movement.y = 0;
-            if (Input.GetButton(aButton))
+            if (Input.GetButtonDown(aButton))
             {
                 movement.y = jumpSpeed;
-                Debug.Log(Input.GetJoystickNames());
+                Debug.Log("Button Pressed");
             }
         }
 
         //Wall Jump and Wall Slide
         if ((blockTouch == true) && (controller.isGrounded == false))
         {
-            if (Input.GetButton(aButton))
+            if (Input.GetButtonDown(aButton))
             {
                 if (movement.x > 0) //Player is going right
                 {
