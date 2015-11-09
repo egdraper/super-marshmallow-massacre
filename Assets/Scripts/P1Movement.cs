@@ -12,9 +12,11 @@ public class P1Movement : MonoBehaviour
     public float wallThrust;
     private int wallJumpTime;
     public float wallJumpTimeDuration;
+    public bool pickUpItem = false;
 
     public string leftJoyXAxis = "Left Stick X Axis P1";
     public string aButton = "A Button P1";
+    public string xButton = "X Button P1";
 
     void Start()
     {
@@ -43,7 +45,6 @@ public class P1Movement : MonoBehaviour
             if (Input.GetButtonDown(aButton))
             {
                 movement.y = jumpSpeed;
-                Debug.Log("Button Pressed");
             }
         }
 
@@ -89,6 +90,8 @@ public class P1Movement : MonoBehaviour
     {
         if (collider.gameObject.tag == "Block")
             blockTouch = true;
+        if ((collider.gameObject.tag == "GrabItem") && (Input.GetButton(xButton)))
+            pickUpItem = true;
     }
 
     void OnTriggerExit (Collider collider)
