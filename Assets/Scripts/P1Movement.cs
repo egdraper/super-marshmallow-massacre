@@ -13,6 +13,9 @@ public class P1Movement : MonoBehaviour
     private int wallJumpTime;
     public float wallJumpTimeDuration;
     public bool pickUpItem = false;
+    private bool facingRight;
+
+    private string itemName;
 
     public string leftJoyXAxis = "Left Stick X Axis P1";
     public string aButton = "A Button P1";
@@ -37,6 +40,12 @@ public class P1Movement : MonoBehaviour
         }
         else
             wallJumpTime++;
+
+        //Determine which way the player is facing.
+        if (movement.x > 0)
+            facingRight = true;
+        else if (movement.x < 0)
+            facingRight = false;
 
         //Jump
         if (controller.isGrounded)
@@ -84,14 +93,26 @@ public class P1Movement : MonoBehaviour
             movement.y = fallSpeed;
 
         controller.Move(movement * Time.deltaTime);
+
+        //Item Movement
+        if (pickUpItem == true)
+        {
+            GameObject.Find(itemName).GetComponent<PickUp>().moveWithOwner(facingRight);
+        }
 	}
 
     void OnTriggerStay(Collider collider)
     {
+        //Detect Wall
         if (collider.gameObject.tag == "Block")
             blockTouch = true;
+
+        //Pick Up Item
         if ((collider.gameObject.tag == "GrabItem") && (Input.GetButton(xButton)))
+        {
             pickUpItem = true;
+            itemName = collider.name;
+        }
     }
 
     void OnTriggerExit (Collider collider)
