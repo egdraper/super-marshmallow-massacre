@@ -99,6 +99,13 @@ public class P1Movement : MonoBehaviour
         {
             GameObject.Find(itemName).GetComponent<PickUp>().moveWithOwner(facingRight);
         }
+
+        //Throw Item
+        if((pickUpItem == true) && (Input.GetButtonDown(xButton)))
+        {
+            pickUpItem = false;
+            GameObject.Find(itemName).GetComponent<PickUp>().getThrown(facingRight);
+        }
 	}
 
     void OnTriggerStay(Collider collider)

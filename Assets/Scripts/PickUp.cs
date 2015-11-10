@@ -5,8 +5,22 @@ public class PickUp : MonoBehaviour {
 
     private bool hasOwner = false;
     private string newOwner;
-    private Vector3 travelWithOwner = Vector3.zero;
+    private Vector3 itemMovement = Vector3.zero;
     public float armReach = 3.5f;
+    private bool thrown = false;
+    private bool playerFacingRight;
+    public float throwSpeed = .5f;
+
+    void FixedUpdate()
+    {
+        Rigidbody rBody = GetComponent<Rigidbody>();
+
+        if (thrown == true)
+        {
+            itemMovement.x = itemMovement.x + throwSpeed;
+            rBody.transform.position = itemMovement;
+        }
+    }
 
     public void moveWithOwner(bool right)
     {
@@ -21,11 +35,25 @@ public class PickUp : MonoBehaviour {
         //Move this item in respect to player's current position.
         if (hasOwner == true)
         {
-            travelWithOwner = GameObject.Find(newOwner).transform.position;
-            travelWithOwner.x = travelWithOwner.x + armReach;
-            rBody.transform.position = travelWithOwner;
+            itemMovement = GameObject.Find(newOwner).transform.position;
+            itemMovement.x = itemMovement.x + armReach;
+            rBody.transform.position = itemMovement;
         }
 	}
+
+    public void getThrown(bool right)
+    {
+        Collider collider = GetComponent<SphereCollider>();
+        Rigidbody rBody = GetComponent<Rigidbody>();
+        hasOwner = false;
+        thrown = true;
+        collider.isTrigger = false;
+        playerFacingRight = right;
+        if (right == true)
+            throwSpeed = Mathf.Abs(throwSpeed);
+        else
+            throwSpeed = Mathf.Abs(throwSpeed) * (-1);
+    }
 
     void OnTriggerStay(Collider collider)
     {
