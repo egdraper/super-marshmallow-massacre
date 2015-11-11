@@ -9,7 +9,9 @@ public class PickUp : MonoBehaviour {
     public float armReach = 3.5f;
     private bool thrown = false;
     private bool playerFacingRight;
-    public float throwSpeed = .5f;
+    public float throwSpeed = 3f;
+    public float fallVelocity = 0f;
+    public float gravity = 1f;
 
     void FixedUpdate()
     {
@@ -19,6 +21,9 @@ public class PickUp : MonoBehaviour {
         {
             itemMovement.x = itemMovement.x + throwSpeed;
             rBody.transform.position = itemMovement;
+            fallVelocity += (gravity/50);
+            itemMovement.y -= fallVelocity * Time.deltaTime;
+
         }
     }
 

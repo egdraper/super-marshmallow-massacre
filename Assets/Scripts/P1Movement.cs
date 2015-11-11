@@ -14,6 +14,7 @@ public class P1Movement : MonoBehaviour
     public float wallJumpTimeDuration;
     public bool pickUpItem = false;
     private bool facingRight;
+    private bool pleaseWait = false;  //To force to wait until next update frame.
 
     private string itemName;
 
@@ -101,11 +102,13 @@ public class P1Movement : MonoBehaviour
         }
 
         //Throw Item
-        if((pickUpItem == true) && (Input.GetButtonDown(xButton)))
+        if((pickUpItem == true) && (Input.GetButtonDown(xButton)) && (pleaseWait == false))
         {
             pickUpItem = false;
             GameObject.Find(itemName).GetComponent<PickUp>().getThrown(facingRight);
         }
+
+        pleaseWait = false;
 	}
 
     void OnTriggerStay(Collider collider)
@@ -117,6 +120,7 @@ public class P1Movement : MonoBehaviour
         //Pick Up Item
         if ((collider.gameObject.tag == "GrabItem") && (Input.GetButton(xButton)))
         {
+            pleaseWait = true;
             pickUpItem = true;
             itemName = collider.name;
         }
