@@ -15,21 +15,20 @@ public class PickUp : MonoBehaviour {
 
     void FixedUpdate()
     {
-        Rigidbody rBody = GetComponent<Rigidbody>();
+        Collider collider = GetComponent<SphereCollider>();
 
         if (thrown == true)
         {
             itemMovement.x = itemMovement.x + throwSpeed;
-            rBody.transform.position = itemMovement;
-            fallVelocity += (gravity/50);
+            collider.transform.position = itemMovement;
+            fallVelocity += (gravity);
             itemMovement.y -= fallVelocity * Time.deltaTime;
-
         }
     }
 
     public void moveWithOwner(bool right)
     {
-        Rigidbody rBody = GetComponent<Rigidbody>();
+        Collider collider = GetComponent<SphereCollider>();
 
         //Which way is the player facing?  This will alter the position of the item.
         if (right == true)
@@ -42,14 +41,13 @@ public class PickUp : MonoBehaviour {
         {
             itemMovement = GameObject.Find(newOwner).transform.position;
             itemMovement.x = itemMovement.x + armReach;
-            rBody.transform.position = itemMovement;
+            collider.transform.position = itemMovement;
         }
 	}
 
     public void getThrown(bool right)
     {
         Collider collider = GetComponent<SphereCollider>();
-        Rigidbody rBody = GetComponent<Rigidbody>();
         hasOwner = false;
         thrown = true;
         collider.isTrigger = false;
