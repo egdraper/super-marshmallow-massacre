@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Assets.Scripts;
 
 public class PickUp : MonoBehaviour {
 
@@ -63,7 +64,7 @@ public class PickUp : MonoBehaviour {
         //Detect whether or not a player is range to pick up this item.
         if (collider.tag == "Player")
         {
-            if (collider.gameObject.GetComponent<P1Movement>().pickUpItem == true)
+            if (collider.gameObject.GetComponent<Movement>().pickUpItem == true)
             {
                 hasOwner = true;
                 newOwner = collider.gameObject.name;

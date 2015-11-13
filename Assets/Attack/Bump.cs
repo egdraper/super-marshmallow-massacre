@@ -17,7 +17,7 @@ namespace Game
         public override int PerformAttack()
         {
             return calculateAttackPower();
-            throw new NotImplementedException();
+        
         }
     }
 }
