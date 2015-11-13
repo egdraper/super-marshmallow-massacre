@@ -29,6 +29,10 @@ namespace Assets.Scripts
         private bool facingRight;
         private bool pleaseWait = false;  //To force to wait until next update frame.
 
+        private bool touchingGround = false;
+        public float characterHeight = 1.6f;
+        private bool jumped = false;
+
         private string itemName;
 
         public string leftJoyXAxis = "Left Stick X Axis P1";
@@ -77,17 +81,20 @@ namespace Assets.Scripts
                 facingRight = false;
 
             //Jump
-            if (controller.isGrounded)
+            //if (controller.isGrounded)
+            if (touchingGround)
             {
                 movement.y = 0;
                 if (Input.GetButtonDown(aButton))
                 {
                     movement.y = jumpSpeed;
+                    jumped = true;
                 }
             }
 
             //Wall Jump and Wall Slide
-            if ((blockTouch == true) && (controller.isGrounded == false))
+            //if ((blockTouch == true) && (controller.isGrounded == false))
+            if ((blockTouch) && (touchingGround))
             {
                 if (Input.GetButtonDown(aButton))
                 {
@@ -113,8 +120,10 @@ namespace Assets.Scripts
                 fallSpeed = jumpSpeed * (-1);
 
             //Movement
-            if ((controller.velocity.y == 0) && (controller.isGrounded == false))
+            //if ((controller.velocity.y == 0) && (controller.isGrounded == false))
+            if ((jumped == false) && (touchingGround))
                 movement.y = 0;
+            jumped = false;
 
             movement.y -= gravity * Time.deltaTime;
 
@@ -122,6 +131,22 @@ namespace Assets.Scripts
                 movement.y = fallSpeed;
 
             controller.Move(movement * Time.deltaTime);
+
+            //Check to see if player is touching ground
+            RaycastHit hit;
+            Ray groundRay = new Ray(transform.position, Vector3.down);
+
+            Debug.DrawRay(transform.position, Vector3.down * characterHeight);
+
+            if (Physics.Raycast(groundRay, out hit, characterHeight))
+            {
+                if (hit.collider.tag == "Block")
+                    touchingGround = true;
+            }
+            else
+                touchingGround = false;
+
+            Debug.Log(touchingGround);
 
             //Item Movement
             if (pickUpItem == true)
