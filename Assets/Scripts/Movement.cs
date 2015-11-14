@@ -25,13 +25,13 @@ namespace Assets.Scripts
         public float wallThrust;
         private int wallJumpTime;
         public float wallJumpTimeDuration;
-        public bool pickUpItem = false;
+        public  bool pickUpItem = false;
         private bool facingRight;
         private bool pleaseWait = false;  //To force to wait until next update frame.
-
+        private bool jumped = false;
         private bool touchingGround = false;
         public float characterHeight = 1.6f;
-        private bool jumped = false;
+        
 
         private string itemName;
 
