@@ -10,6 +10,7 @@ public class PickUp : MonoBehaviour {
     public float armReach = 3.5f;
     private bool playerFacingRight;
     public float throwSpeed = 3f;
+    public bool thrown = false;
 
     public void moveWithOwner(bool right)
     {
@@ -48,22 +49,27 @@ public class PickUp : MonoBehaviour {
         rBody.useGravity = true;
         rBody.AddForce(throwSpeed,0f,0f);
         rBody.freezeRotation = false;
+        thrown = true;
     }
 
     void OnTriggerStay(Collider otherCollider)
     {
-        Rigidbody rBody = GetComponent<Rigidbody>();
         Collider collider = GetComponent<SphereCollider>();
+        Rigidbody rBody = GetComponent<Rigidbody>();
 
-        //Detect whether or not a player is range to pick up this item.
+        //Detect whether or not a player is in range to pick up this item.
         if (otherCollider.tag == "Player")
         {
-            if (otherCollider.gameObject.GetComponent<Movement>().pickUpItem == true)
+            if ((otherCollider.gameObject.GetComponent<Movement>().pickUpItem == true) && (thrown == false))
             {
                 collider.isTrigger = true;
                 hasOwner = true;
                 newOwner = otherCollider.gameObject.name;
                 rBody.useGravity = false;
+            }
+            if (thrown)
+            {
+                thrown = false;
             }
         }
     }

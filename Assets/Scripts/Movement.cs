@@ -29,7 +29,7 @@ namespace Assets.Scripts
         private bool facingRight;
         private bool pleaseWait = false;  //To force to wait until next update frame.
         public float characterHeight = 1.6f;
-        
+        public bool gotHit = false;
 
         private string itemName;
 
@@ -60,7 +60,6 @@ namespace Assets.Scripts
 
         void Update()
         {
-
             CharacterController controller = GetComponent<CharacterController>();
             Rigidbody rBody = GetComponent<Rigidbody>();
 
@@ -77,6 +76,13 @@ namespace Assets.Scripts
                 facingRight = true;
             else if (movement.x < 0)
                 facingRight = false;
+
+            //Is the player currently stunned?
+            if (gotHit)
+            {
+                StartCoroutine(GotHitTimer(3f));
+                gotHit = false;
+            }
 
             //Jump
             if (controller.isGrounded)
@@ -143,16 +149,26 @@ namespace Assets.Scripts
 
         void OnTriggerStay(Collider collider)
         {
-            //Detect Wall
+             //Detect Wall
             if (collider.gameObject.tag == "Block")
                 blockTouch = true;
 
-            //Pick Up Item
-            if ((collider.gameObject.tag == "GrabItem") && (Input.GetButton(xButton)))
+            //Item interaction
+            if (collider.gameObject.tag == "GrabItem")
             {
-                pleaseWait = true;
-                pickUpItem = true;
-                itemName = collider.name;
+                //Pick up item
+                if ((Input.GetButton(xButton)) && (collider.GetComponent<PickUp>().thrown == false))
+                {
+                    pleaseWait = true;
+                    pickUpItem = true;
+                    itemName = collider.name;
+                }
+
+                //Get hit by item
+                if (collider.GetComponent<PickUp>().thrown == true)
+                {
+                    gotHit = true;
+                }
             }
         }
 
@@ -160,6 +176,23 @@ namespace Assets.Scripts
         {
             if (collider.gameObject.tag == "Block")
                 blockTouch = false;
+        }
+
+        IEnumerator GotHitTimer(float waitTime)
+        {
+            CharacterController controller = GetComponent<CharacterController>();
+            Rigidbody rBody = GetComponent<Rigidbody>();
+            Collider collider = GetComponent<BoxCollider>();
+
+            controller.enabled = false;
+            collider.isTrigger = false;
+            rBody.isKinematic = false;
+            rBody.useGravity = true;
+            yield return new WaitForSeconds(waitTime);
+            rBody.useGravity = false;
+            rBody.isKinematic = true;
+            collider.isTrigger = true;
+            controller.enabled = true;
         }
     }
 }
