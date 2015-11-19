@@ -16,11 +16,14 @@ namespace Assets.Scripts
         public IMovement _walkingState;
         public IMovement _throwingState;
 
+        private Rigidbody rBody;
+        private Collider playerCollider;
+
         private Vector3 movement = Vector3.zero;
         public float moveSpeed;
+        public float maxMoveSpeed;
         public float jumpSpeed;
         private float fallSpeed;
-        public float gravity;
         private bool blockTouch;
         public float wallThrust;
         private int wallJumpTime;
@@ -28,8 +31,8 @@ namespace Assets.Scripts
         public  bool pickUpItem = false;
         private bool facingRight;
         private bool pleaseWait = false;  //To force to wait until next update frame.
-        public float characterHeight = 1.6f;
         public bool gotHit = false;
+        private bool grounded = false;
 
         private string itemName;
 
@@ -53,28 +56,28 @@ namespace Assets.Scripts
 
         void Start()
         {
+            rBody = GetComponent<Rigidbody>();
+            playerCollider = GetComponent<BoxCollider>();
+
             fallSpeed = jumpSpeed * (-1);
             blockTouch = false;
             wallJumpTime = 0;
         }
 
-        void Update()
+        void FixedUpdate()
         {
-            CharacterController controller = GetComponent<CharacterController>();
-            Rigidbody rBody = GetComponent<Rigidbody>();
-
-            if ((wallJumpTime == 0) || (wallJumpTime > wallJumpTimeDuration))
-            {
+            //if ((wallJumpTime == 0) || (wallJumpTime > wallJumpTimeDuration))
                 movement.x = Input.GetAxis(leftJoyXAxis) * moveSpeed;
-                wallJumpTime = 0;
-            }
+
+            if (Mathf.Abs(rBody.velocity.y) < 0.001)
+                grounded = true;
             else
-                wallJumpTime++;
+                grounded = false;
 
             //Determine which way the player is facing.
-            if (movement.x > 0)
+            if (rBody.velocity.x > 0)
                 facingRight = true;
-            else if (movement.x < 0)
+            else if (rBody.velocity.x < 0)
                 facingRight = false;
 
             //Is the player currently stunned?
@@ -85,34 +88,27 @@ namespace Assets.Scripts
             }
 
             //Jump
-            if (controller.isGrounded)
+            if ((grounded) && (Input.GetButtonDown(aButton)))
+                rBody.AddForce(0f,jumpSpeed,0f);
+
+            //Wall Jump and Wall Slide
+            if ((blockTouch) && (!grounded))
             {
-                movement.y = 0;
                 if (Input.GetButtonDown(aButton))
                 {
                     movement.y = jumpSpeed;
-                }
-            }
-
-            //Wall Jump and Wall Slide
-            if ((blockTouch == true) && (controller.isGrounded == false))
-            {
-                if (Input.GetButtonDown(aButton))
-                {
-                    if (movement.x > 0) //Player is going right
+                    if (facingRight) //Player is going right
                     {
-                        movement.y = jumpSpeed;
                         movement.x = moveSpeed * (-1);
                         wallJumpTime = 1;
                     }
-                    else if (movement.x < 0) //Player is going left
+                    else if (!facingRight) //Player is going left
                     {
-                        movement.y = jumpSpeed;
                         movement.x = moveSpeed;
                         wallJumpTime = 1;
                     }
                 }
-                if ((movement.x != 0) && (controller.velocity.x == 0))
+                if ((movement.x != 0) && (rBody.velocity.x == 0))
                     fallSpeed = (jumpSpeed * (-1)) / 4; //Wall slide speed equation
                 else
                     fallSpeed = jumpSpeed * (-1);
@@ -121,21 +117,22 @@ namespace Assets.Scripts
                 fallSpeed = jumpSpeed * (-1);
 
             //Movement
-            if ((controller.velocity.y == 0) && (controller.isGrounded == false))
+            //if (Mathf.Abs(movement.y) > fallSpeed)
+            //    movement.y = 0;
+
+            if (grounded)
                 movement.y = 0;
 
-            movement.y -= gravity * Time.deltaTime;
+            if ((rBody.velocity.x > maxMoveSpeed) && (Input.GetAxis(leftJoyXAxis) > 0))
+                movement.x = 0;
+            else if ((rBody.velocity.x < (maxMoveSpeed * -1)) && (Input.GetAxis(leftJoyXAxis) < 0))
+                movement.x = 0;
 
-            if (movement.y < fallSpeed)
-                movement.y = fallSpeed;
-
-            controller.Move(movement * Time.deltaTime);
+            rBody.AddForce(movement);
 
             //Item Movement
             if (pickUpItem == true)
-            {
                 GameObject.Find(itemName).GetComponent<PickUp>().moveWithOwner(facingRight);
-            }
 
             //Throw Item
             if ((pickUpItem == true) && (Input.GetButtonDown(xButton)) && (pleaseWait == false))
@@ -145,9 +142,10 @@ namespace Assets.Scripts
             }
 
             pleaseWait = false;
+            Debug.Log(blockTouch);
         }
 
-        void OnTriggerStay(Collider collider)
+        void OnCollisionStay(Collision collider)
         {
              //Detect Wall
             if (collider.gameObject.tag == "Block")
@@ -157,22 +155,20 @@ namespace Assets.Scripts
             if (collider.gameObject.tag == "GrabItem")
             {
                 //Pick up item
-                if ((Input.GetButton(xButton)) && (collider.GetComponent<PickUp>().thrown == false))
+                if ((Input.GetButton(xButton)) && (collider.collider.GetComponent<PickUp>().thrown == false))
                 {
                     pleaseWait = true;
                     pickUpItem = true;
-                    itemName = collider.name;
+                    itemName = collider.collider.name;
                 }
 
                 //Get hit by item
-                if (collider.GetComponent<PickUp>().thrown == true)
-                {
+                if (collider.collider.GetComponent<PickUp>().thrown == true)
                     gotHit = true;
-                }
             }
         }
 
-        void OnTriggerExit(Collider collider)
+        void OnCollisionExit(Collision collider)
         {
             if (collider.gameObject.tag == "Block")
                 blockTouch = false;
@@ -180,19 +176,18 @@ namespace Assets.Scripts
 
         IEnumerator GotHitTimer(float waitTime)
         {
-            CharacterController controller = GetComponent<CharacterController>();
-            Rigidbody rBody = GetComponent<Rigidbody>();
-            Collider collider = GetComponent<BoxCollider>();
-
-            controller.enabled = false;
-            collider.isTrigger = false;
+            playerCollider.isTrigger = false;
             rBody.isKinematic = false;
             rBody.useGravity = true;
             yield return new WaitForSeconds(waitTime);
             rBody.useGravity = false;
             rBody.isKinematic = true;
-            collider.isTrigger = true;
-            controller.enabled = true;
+            playerCollider.isTrigger = true;
         }
+
+        //IEnumerator WallJumpWait(float waitTime)
+        //{
+
+        //}
     }
 }
