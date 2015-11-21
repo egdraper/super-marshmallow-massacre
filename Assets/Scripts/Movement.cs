@@ -142,7 +142,6 @@ namespace Assets.Scripts
             }
 
             pleaseWait = false;
-            Debug.Log(blockTouch);
         }
 
         void OnCollisionStay(Collision collider)
