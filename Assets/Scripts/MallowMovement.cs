@@ -13,12 +13,17 @@ namespace Assets.Scripts
         private bool facingRight;
         private bool grounded;
         private bool jump;
+        private bool pleaseWait = false;
+        public bool gotHit;
+        public bool pickUpItem;
+        public bool thrown;
 
         public float friction;
         public float jumpSpeed;
         public float maxMoveSpeed;
         public float moveSpeed;
 
+        private string itemName;
         public string aButton = "A Button P1";
         public string leftJoyXAxis = "Left Stick X Axis P1";
         public string xButton = "X Button P1";
@@ -35,6 +40,20 @@ namespace Assets.Scripts
                 jump = true;
             else
                 jump = false;
+
+            //Item movement
+            if (pickUpItem == true)
+                GameObject.Find(itemName).GetComponent<PickUp>().moveWithOwner(facingRight);
+            
+            //Throw Item
+            if ((pickUpItem == true) && (Input.GetButtonDown(xButton)) && (pleaseWait == false))
+            {
+                pickUpItem = false;
+                GameObject.Find(itemName).GetComponent<PickUp>().getThrown(facingRight);
+            }
+
+            //Wait until next update
+            pleaseWait = false;
         }
 
         void FixedUpdate()
@@ -74,15 +93,31 @@ namespace Assets.Scripts
             rBody.AddForce(movement);
         }
 
-        void OnCollisionStay(Collision collider)
+        void OnTriggerStay(Collider otherCollider)
         {
             //Detect Wall
-            if (collider.gameObject.tag == "Block")
+            if (otherCollider.gameObject.tag == "Block")
                 blockTouch = true;
 
             //Item interaction
-            if (collider.gameObject.tag == "GrabItem")
-                Debug.Log("Yay!");
+            if (otherCollider.gameObject.tag == "GrabItem")
+            {
+                //Pick up item
+                if ((Input.GetButton(xButton)) && (otherCollider.GetComponentInParent<PickUp>().thrown == false))
+                {
+                    pleaseWait = true;
+                    pickUpItem = true;
+                    itemName = otherCollider.transform.parent.name;
+
+                    //Change item's info
+                    otherCollider.GetComponentInParent<PickUp>().hasOwner = true;
+                    otherCollider.GetComponentInParent<PickUp>().newOwner = gameObject.name;
+                }
+
+                //Get hit by item
+                if (otherCollider.GetComponentInParent<PickUp>().thrown == true)
+                    gotHit = true;
+            }
         }
     }
 }

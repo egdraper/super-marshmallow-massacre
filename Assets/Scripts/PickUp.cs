@@ -4,19 +4,28 @@ using Assets.Scripts;
 
 public class PickUp : MonoBehaviour {
 
-    private bool hasOwner = false;
-    private string newOwner;
+    private Rigidbody rBody;
+    private Collider itemCollider;
+
     private Vector3 itemMovement = Vector3.zero;
-    public float armReach = 3.5f;
+
     private bool playerFacingRight;
-    public float throwSpeed = 3f;
+    public bool hasOwner = false;
     public bool thrown = false;
+  
+    public float armReach = 3.5f;
+    public float throwSpeed = 3f;
+    
+    public string newOwner;
+
+    void Start()
+    {
+        rBody = GetComponent<Rigidbody>();
+        itemCollider = GetComponent<SphereCollider>();
+    }
 
     public void moveWithOwner(bool right)
     {
-        Collider collider = GetComponent<SphereCollider>();
-        Rigidbody rBody = GetComponent<Rigidbody>();
-
         //Which way is the player facing?  This will alter the position of the item.
         if (right == true)
             armReach = Mathf.Abs(armReach);
@@ -31,16 +40,14 @@ public class PickUp : MonoBehaviour {
             itemMovement.z = 0f;
             rBody.freezeRotation = true;
             
-            collider.transform.position = itemMovement;
+            itemCollider.transform.position = itemMovement;
         }
 	}
 
     public void getThrown(bool right)
     {
-        Collider collider = GetComponent<SphereCollider>();
-        Rigidbody rBody = GetComponent<Rigidbody>();
         hasOwner = false;
-        collider.isTrigger = false;
+        itemCollider.isTrigger = false;
         playerFacingRight = right;
         if (right == true)
             throwSpeed = Mathf.Abs(throwSpeed);
@@ -50,19 +57,17 @@ public class PickUp : MonoBehaviour {
         rBody.AddForce(throwSpeed,0f,0f);
         rBody.freezeRotation = false;
         thrown = true;
+        gameObject.layer = 0; //'0' is the default layer
     }
 
-    void OnTriggerStay(Collider otherCollider)
+    void OnCollisionStay(Collision otherCollider)
     {
-        Collider collider = GetComponent<SphereCollider>();
-        Rigidbody rBody = GetComponent<Rigidbody>();
-
         //Detect whether or not a player is in range to pick up this item.
-        if (otherCollider.tag == "Player")
+        if (otherCollider.collider.tag == "Player")
         {
-            if ((otherCollider.gameObject.GetComponent<Movement>().pickUpItem == true) && (thrown == false))
+            if ((otherCollider.gameObject.GetComponent<MallowMovement>().pickUpItem == true) && (thrown == false))
             {
-                collider.isTrigger = true;
+                itemCollider.isTrigger = true;
                 hasOwner = true;
                 newOwner = otherCollider.gameObject.name;
                 rBody.useGravity = false;
