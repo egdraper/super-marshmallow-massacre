@@ -79,6 +79,15 @@ namespace Assets.Scripts
             if ((grounded) && ((jump) || (Input.GetButtonDown(aButton))))
                 movement.y = jumpSpeed;
             
+            //Wall jump and wall slide
+            if ((blockTouch) && (!grounded))
+            {
+                if (jump)
+                {
+                    movement.y = jumpSpeed;
+                }
+            }
+
             //Limit movement speed
             if ((rBody.velocity.x > maxMoveSpeed) && (movement.x > 0))
                 movement.x = 0;

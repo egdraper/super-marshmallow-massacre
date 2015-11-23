@@ -9,11 +9,13 @@ public class PickUp : MonoBehaviour {
 
     private Vector3 itemMovement = Vector3.zero;
 
+    private bool hitPlayer = false;
     private bool playerFacingRight;
     public bool hasOwner = false;
     public bool thrown = false;
   
     public float armReach = 3.5f;
+    public float pickUpSpeed;
     public float throwSpeed = 3f;
     
     public string newOwner;
@@ -22,6 +24,16 @@ public class PickUp : MonoBehaviour {
     {
         rBody = GetComponent<Rigidbody>();
         itemCollider = GetComponent<SphereCollider>();
+    }
+
+    void Update()
+    {
+        if (((thrown) && (rBody.velocity.magnitude < pickUpSpeed)) || (hitPlayer))
+        {
+            thrown = false;
+            hitPlayer = false;
+            gameObject.layer = 8; //'8' is the hidden object layer
+        }
     }
 
     public void moveWithOwner(bool right)
@@ -53,7 +65,6 @@ public class PickUp : MonoBehaviour {
             throwSpeed = Mathf.Abs(throwSpeed);
         else
             throwSpeed = Mathf.Abs(throwSpeed) * (-1);
-        rBody.useGravity = true;
         rBody.AddForce(throwSpeed,0f,0f);
         rBody.freezeRotation = false;
         thrown = true;
@@ -62,20 +73,10 @@ public class PickUp : MonoBehaviour {
 
     void OnCollisionStay(Collision otherCollider)
     {
-        //Detect whether or not a player is in range to pick up this item.
+        //Detect whether or not a player got hit by this item
         if (otherCollider.collider.tag == "Player")
         {
-            if ((otherCollider.gameObject.GetComponent<MallowMovement>().pickUpItem == true) && (thrown == false))
-            {
-                itemCollider.isTrigger = true;
-                hasOwner = true;
-                newOwner = otherCollider.gameObject.name;
-                rBody.useGravity = false;
-            }
-            if (thrown)
-            {
-                thrown = false;
-            }
+            hitPlayer = true;
         }
     }
 }
