@@ -9,7 +9,6 @@ namespace Assets.Scripts
         private Rigidbody rBody;
         private Collider playerCollider;
 
-        private bool blockTouch;
         private bool facingRight;
         private bool grounded;
         private bool jump;
@@ -17,11 +16,13 @@ namespace Assets.Scripts
         public bool gotHit;
         public bool pickUpItem;
         public bool thrown;
+        public bool wallTouch = false;
 
         public float friction;
         public float jumpSpeed;
         public float maxMoveSpeed;
         public float moveSpeed;
+        public float wallFriction;
 
         private string itemName;
         public string aButton = "A Button P1";
@@ -80,11 +81,13 @@ namespace Assets.Scripts
                 movement.y = jumpSpeed;
             
             //Wall jump and wall slide
-            if ((blockTouch) && (!grounded))
+            if ((wallTouch) && (!grounded))
             {
                 if (jump)
                 {
                     movement.y = jumpSpeed;
+                    if((movement.x != 0) && (Mathf.Abs(rBody.velocity.x) < .001))
+                        movement.y =+ wallFriction;
                 }
             }
 
@@ -104,10 +107,6 @@ namespace Assets.Scripts
 
         void OnTriggerStay(Collider otherCollider)
         {
-            //Detect Wall
-            if (otherCollider.gameObject.tag == "Block")
-                blockTouch = true;
-
             //Item interaction
             if (otherCollider.gameObject.tag == "GrabItem")
             {
