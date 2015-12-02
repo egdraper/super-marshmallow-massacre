@@ -83,6 +83,8 @@ namespace Assets.Scripts
             //Wall jump and wall slide
             if ((wallTouch) && (!grounded))
             {
+                if ((movement.x != 0) && (Mathf.Abs(rBody.velocity.x) < .001))
+                    movement.y = +wallFriction;
                 if (jump)
                 {
                     movement.y = jumpSpeed;
