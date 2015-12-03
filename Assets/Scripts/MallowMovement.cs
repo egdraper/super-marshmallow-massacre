@@ -19,9 +19,10 @@ namespace Assets.Scripts
         public bool wallTouch = false;
 
         public float friction;
-        public float jumpSpeed;
-        public float maxMoveSpeed;
-        public float moveSpeed;
+        public float jumpForce;
+        public float maxVelocity;
+        public float moveAcceleration;
+        public float nearMaxVelocity;
         public float wallFriction;
 
         private string itemName;
@@ -33,6 +34,8 @@ namespace Assets.Scripts
         {
             rBody = GetComponent<Rigidbody>();
             playerCollider = GetComponent<BoxCollider>();
+
+            jumpForce = jumpForce * 10f;
         }
 
         void Update()
@@ -59,10 +62,10 @@ namespace Assets.Scripts
 
         void FixedUpdate()
         {
-            Vector3 movement = new Vector3(0f,0f,0f);
+            Vector3 moveForce = new Vector3(0f,0f,0f);
 
             //Get joystick input
-            movement.x = Input.GetAxis(leftJoyXAxis) * moveSpeed;
+            moveForce.x = Input.GetAxis(leftJoyXAxis) * moveAcceleration;
 
             //Which direction is the player facing?
             if (rBody.velocity.x > 0)
@@ -78,33 +81,37 @@ namespace Assets.Scripts
             
             //Jump
             if ((grounded) && ((jump) || (Input.GetButtonDown(aButton))))
-                movement.y = jumpSpeed;
+                moveForce.y = jumpForce;
             
             //Wall jump and wall slide
             if ((wallTouch) && (!grounded))
             {
-                if ((movement.x != 0) && (Mathf.Abs(rBody.velocity.x) < .001))
-                    movement.y = +wallFriction;
+                if ((moveForce.x != 0) && (Mathf.Abs(rBody.velocity.x) < .001))
+                    moveForce.y = +wallFriction;
                 if (jump)
                 {
-                    movement.y = jumpSpeed;
-                    if((movement.x != 0) && (Mathf.Abs(rBody.velocity.x) < .001))
-                        movement.y =+ wallFriction;
+                    moveForce.y = jumpForce;
+                    if((moveForce.x != 0) && (Mathf.Abs(rBody.velocity.x) < .001))
+                        moveForce.y =+ wallFriction;
                 }
             }
 
             //Limit movement speed
-            if ((rBody.velocity.x > maxMoveSpeed) && (movement.x > 0))
-                movement.x = 0;
-            else if ((rBody.velocity.x < (maxMoveSpeed * -1)) && (movement.x < 0))
-                movement.x = 0;
+            if ((rBody.velocity.x > maxVelocity) && (moveForce.x > 0)) //right
+            {
+                moveForce.x = 0;
+            }
+            else if ((rBody.velocity.x < (maxVelocity * -1)) && (moveForce.x < 0)) //left
+                moveForce.x = 0;
 
             //Add some friction and drag
-            if (Input.GetAxis(leftJoyXAxis) == 0)
-                movement.x = (rBody.velocity.x * -1) * friction;
+            if ((Input.GetAxis(leftJoyXAxis) == 0) || (((rBody.velocity.x > 1) && (Input.GetAxis(leftJoyXAxis) < 0)) || ((rBody.velocity.x < -1) && (Input.GetAxis(leftJoyXAxis) > 0)))) //$#&@!!!
+                moveForce.x = +(rBody.velocity.x * -1) * friction;
 
             //Movement
-            rBody.AddForce(movement);
+            rBody.AddForce(moveForce);
+
+            //Debug.Log(rBody.velocity.x);
         }
 
         void OnTriggerStay(Collider otherCollider)
