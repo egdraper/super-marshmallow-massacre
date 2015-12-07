@@ -18,6 +18,7 @@ namespace Assets.Scripts
         public bool thrown;
         public bool wallTouch = false;
 
+        public float extraGravity;
         public float friction;
         public float jumpForce;
         public float maxVelocity;
@@ -106,12 +107,15 @@ namespace Assets.Scripts
 
             //Add some friction and drag
             if ((Input.GetAxis(leftJoyXAxis) == 0) || (((rBody.velocity.x > 1) && (Input.GetAxis(leftJoyXAxis) < 0)) || ((rBody.velocity.x < -1) && (Input.GetAxis(leftJoyXAxis) > 0)))) //$#&@!!!
-                moveForce.x = +(rBody.velocity.x * -1) * friction;
+                moveForce.x = moveForce.x + (rBody.velocity.x * -1) * friction;
+
+            //Add some player gravity
+            moveForce.y = moveForce.y - extraGravity;
 
             //Movement
             rBody.AddForce(moveForce);
 
-            //Debug.Log(rBody.velocity.x);
+            Debug.Log(rBody.velocity.x);
         }
 
         void OnTriggerStay(Collider otherCollider)
