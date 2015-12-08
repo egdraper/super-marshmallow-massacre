@@ -10,7 +10,7 @@ namespace Assets.Scripts
         private Collider playerCollider;
 
         private bool facingRight;
-        private bool grounded;
+        public bool grounded = false;
         private bool jump;
         private bool pleaseWait = false;
         public bool gotHit;
@@ -69,19 +69,13 @@ namespace Assets.Scripts
             moveForce.x = Input.GetAxis(leftJoyXAxis) * moveAcceleration;
 
             //Which direction is the player facing?
-            if (rBody.velocity.x > 0)
+            if (rBody.velocity.x > 0.1)
                 facingRight = true;
-            else if (rBody.velocity.x < 0)
+            else if (rBody.velocity.x < -0.1)
                 facingRight = false;
-
-            //Is the player touching the ground?
-            if (Mathf.Abs(rBody.velocity.y) < 0.001)
-                grounded = true;
-            else
-                grounded = false;
             
             //Jump
-            if ((grounded) && ((jump) || (Input.GetButtonDown(aButton))))
+            if ((grounded) && ((jump) || (Input.GetButtonDown(aButton)))  && (rBody.velocity.y < .1))
                 moveForce.y = jumpForce;
             
             //Wall jump and wall slide
@@ -114,8 +108,6 @@ namespace Assets.Scripts
 
             //Movement
             rBody.AddForce(moveForce);
-
-            Debug.Log(rBody.velocity.x);
         }
 
         void OnTriggerStay(Collider otherCollider)
