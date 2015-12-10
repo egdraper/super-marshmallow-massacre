@@ -12,12 +12,15 @@ namespace Assets.Scripts
         private bool facingRight;
         private bool jump;
         private bool pleaseWait = false;
+        private bool wallPush = false;
         private bool wallSlide = false;
         public bool gotHit;
         public bool grounded = false;
         public bool pickUpItem;
         public bool thrown;
         public bool wallTouch = false;
+        public bool wallTouchLeft = false;
+        public bool wallTouchRight = false;
 
         public float extraGravity;
         public float friction;
@@ -26,6 +29,8 @@ namespace Assets.Scripts
         public float moveAcceleration;
         public float nearMaxVelocity;
         public float wallFriction;
+        public float wallPushDuration;
+        public float wallPushForce;
 
         private string itemName;
         public string aButton = "A Button P1";
@@ -65,9 +70,10 @@ namespace Assets.Scripts
             Vector3 moveForce = new Vector3(0f,0f,0f);
 
             //Get joystick input
-            moveForce.x = Input.GetAxis(leftJoyXAxis) * moveAcceleration;
+            if (!wallPush)
+                moveForce.x = Input.GetAxis(leftJoyXAxis) * moveAcceleration;
 
-            //Which direction is the player facing?
+            //Which direction is the player facing? 
             if (rBody.velocity.x > 0.1)
                 facingRight = true;
             else if (rBody.velocity.x < -0.1)
@@ -77,18 +83,36 @@ namespace Assets.Scripts
             if ((grounded) && ((jump) || (Input.GetButtonDown(aButton)))  && (rBody.velocity.y < .1))
                 moveForce.y = jumpForce;
 
+            //Is the player touching a wall?
+            if ((wallTouchLeft) || (wallTouchRight))
+                wallTouch = true;
+            else
+                wallTouch = false;
+
             //Wall slide
             if ((wallTouch) && (!grounded) && (moveForce.x != 0) && (Mathf.Abs(rBody.velocity.x) < .001))
+            {
+                if ((!wallSlide) && (rBody.velocity.y < 0))
+                    rBody.velocity = rBody.velocity / 4;
                 wallSlide = true;
+            }
             else
                 wallSlide = false;
 
-            //Wall jump and wall slide
+            //Wall jump
             if ((wallTouch) && (!grounded) && (jump))
             {
                 rBody.velocity = Vector3.zero;
                 moveForce.y = +jumpForce;
+                if (wallTouchLeft)
+                    wallPushForce = Mathf.Abs(wallPushForce);
+                else
+                    wallPushForce = Mathf.Abs(wallPushForce) * -1;
+                StartCoroutine(WallPushForceTimer(wallPushDuration));
             }
+
+            if (wallPush)
+                moveForce.x = +wallPushForce;
 
             //Limit movement speed
             if ((rBody.velocity.x > maxVelocity) && (moveForce.x > 0)) //right
@@ -136,6 +160,13 @@ namespace Assets.Scripts
                 if (otherCollider.GetComponentInParent<PickUp>().thrown == true)
                     gotHit = true;
             }
+        }
+
+        IEnumerator WallPushForceTimer(float waitTime)
+        {
+            wallPush = true;
+            yield return new WaitForSeconds(waitTime);
+            wallPush = false;
         }
     }
 }

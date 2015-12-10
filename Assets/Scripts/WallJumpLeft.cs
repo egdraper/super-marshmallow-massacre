@@ -2,13 +2,13 @@
 using System.Collections;
 using Assets.Scripts;
 
-public class WallJump : MonoBehaviour {
+public class WallJumpLeft : MonoBehaviour {
 
     void OnTriggerEnter(Collider collider)
     {
         if (collider.gameObject.tag == "Block")
         {
-            this.transform.parent.GetComponentInParent<MallowMovement>().wallTouch = true;
+            this.transform.parent.GetComponentInParent<MallowMovement>().wallTouchLeft = true;
         }
     }
 
@@ -16,7 +16,7 @@ public class WallJump : MonoBehaviour {
     {
         if (collider.gameObject.tag == "Block")
         {
-            this.transform.parent.GetComponentInParent<MallowMovement>().wallTouch = false;
+            this.transform.parent.GetComponentInParent<MallowMovement>().wallTouchLeft = false;
         }
     }
 }

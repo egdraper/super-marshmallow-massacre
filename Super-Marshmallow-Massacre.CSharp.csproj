@@ -100,7 +100,8 @@
     <Compile Include="Assets\Scripts\Movement.cs" />
     <Compile Include="Assets\Scripts\NewBehaviourScript.cs" />
     <Compile Include="Assets\Scripts\PickUp.cs" />
-    <Compile Include="Assets\Scripts\WallJump.cs" />
+    <Compile Include="Assets\Scripts\WallJumpLeft.cs" />
+    <Compile Include="Assets\Scripts\WallJumpRight.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>
