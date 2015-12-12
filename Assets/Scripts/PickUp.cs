@@ -11,6 +11,7 @@ public class PickUp : MonoBehaviour {
 
     private bool hitPlayer = false;
     private bool playerFacingRight;
+    private bool pleaseWait = false;
     public bool hasOwner = false;
     public bool thrown = false;
   
@@ -28,12 +29,15 @@ public class PickUp : MonoBehaviour {
 
     void Update()
     {
-        if (((thrown) && (rBody.velocity.magnitude < pickUpSpeed)) || (hitPlayer))
+        if ((!pleaseWait) && (((thrown) && (rBody.velocity.magnitude < pickUpSpeed)) || (hitPlayer)))
         {
             thrown = false;
             hitPlayer = false;
             gameObject.layer = 8; //'8' is the hidden object layer
         }
+
+        //Wait until next update
+        pleaseWait = false;
     }
 
     public void moveWithOwner(bool right)
@@ -65,6 +69,8 @@ public class PickUp : MonoBehaviour {
             throwSpeed = Mathf.Abs(throwSpeed);
         else
             throwSpeed = Mathf.Abs(throwSpeed) * (-1);
+        pleaseWait = true;
+        rBody.velocity = Vector3.zero;
         rBody.AddForce(throwSpeed,0f,0f);
         rBody.freezeRotation = false;
         thrown = true;
