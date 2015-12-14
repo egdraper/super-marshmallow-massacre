@@ -138,7 +138,7 @@ namespace Assets.Scripts
             if ((pickUpItem == true) && (Input.GetButtonDown(xButton)) && (pleaseWait == false))
             {
                 pickUpItem = false;
-                GameObject.Find(itemName).GetComponent<PickUp>().getThrown(facingRight);
+                //GameObject.Find(itemName).GetComponent<PickUp>().getThrown(facingRight);
             }
 
             pleaseWait = false;

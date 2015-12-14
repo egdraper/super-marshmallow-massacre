@@ -60,7 +60,7 @@ public class PickUp : MonoBehaviour {
         }
 	}
 
-    public void getThrown(bool right)
+    public void getThrown(bool right, Vector3 throwAngle, float addThrowForce)
     {
         hasOwner = false;
         itemCollider.isTrigger = false;
@@ -71,7 +71,8 @@ public class PickUp : MonoBehaviour {
             throwSpeed = Mathf.Abs(throwSpeed) * (-1);
         pleaseWait = true;
         rBody.velocity = Vector3.zero;
-        rBody.AddForce(throwSpeed,0f,0f);
+        rBody.AddForce(throwSpeed * (throwAngle)); //Yummy
+        //rBody.AddForce(throwSpeed,0f,0f);
         rBody.freezeRotation = false;
         thrown = true;
         gameObject.layer = 0; //'0' is the default layer

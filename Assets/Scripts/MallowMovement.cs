@@ -9,9 +9,11 @@ namespace Assets.Scripts
         private Rigidbody rBody;
         private Collider playerCollider;
 
+        private bool currentlyThrowing = false;
         private bool facingRight;
         private bool jump;
         private bool pleaseWait = false;
+        private bool readyToThrow = false;
         private bool wallPush = false;
         private bool wallSlide = false;
         public bool gotHit;
@@ -22,6 +24,7 @@ namespace Assets.Scripts
         public bool wallTouchLeft = false;
         public bool wallTouchRight = false;
 
+        private float windUpTimer = 0f;
         public float extraGravity;
         public float friction;
         public float jumpForce;
@@ -35,6 +38,7 @@ namespace Assets.Scripts
         private string itemName;
         public string aButton = "A Button P1";
         public string leftJoyXAxis = "Left Stick X Axis P1";
+        public string leftJoyYAxis = "Left Stick Y Axis P1";
         public string xButton = "X Button P1";
 
         void Start()
@@ -53,12 +57,37 @@ namespace Assets.Scripts
             //Item movement
             if (pickUpItem == true)
                 GameObject.Find(itemName).GetComponent<PickUp>().moveWithOwner(facingRight);
-            
-            //Throw Item
-            if ((pickUpItem == true) && (Input.GetButtonDown(xButton)) && (pleaseWait == false))
+
+            //Player must release x button after initial pick up for the item to be ready to throw
+            if ((pickUpItem) && (!readyToThrow) && (Input.GetButtonUp(xButton)))
             {
+                readyToThrow = true;
+                pleaseWait = true;
+            }
+
+            //Set throw force
+            if (readyToThrow)
+            {
+                if (Input.GetButtonDown(xButton))
+                    currentlyThrowing = true;
+
+                if (currentlyThrowing)
+                    windUpTimer += Time.deltaTime;
+
+                if (windUpTimer > 3)
+                    windUpTimer = 3;
+            }
+
+            //Throw Item
+            if ((pickUpItem) && (Input.GetButtonUp(xButton)) && (!pleaseWait) && (readyToThrow))
+            {
+                Vector3 throwAngle = new Vector3(Input.GetAxis(leftJoyXAxis), Input.GetAxis(leftJoyYAxis), 0f).normalized;
+                Debug.Log(throwAngle.y);
                 pickUpItem = false;
-                GameObject.Find(itemName).GetComponent<PickUp>().getThrown(facingRight);
+                GameObject.Find(itemName).GetComponent<PickUp>().getThrown(facingRight, throwAngle, windUpTimer);
+                readyToThrow = false;
+                currentlyThrowing = false;
+                windUpTimer = 0f;
             }
 
             //Wait until next update
@@ -70,13 +99,13 @@ namespace Assets.Scripts
             Vector3 moveForce = new Vector3(0f,0f,0f);
 
             //Get joystick input
-            if (!wallPush)
+            if ((!wallPush) && (!currentlyThrowing))
                 moveForce.x = Input.GetAxis(leftJoyXAxis) * moveAcceleration;
 
             //Which direction is the player facing? 
-            if (rBody.velocity.x > 0.1)
+            if (Input.GetAxis(leftJoyXAxis) > 0.1)
                 facingRight = true;
-            else if (rBody.velocity.x < -0.1)
+            else if (Input.GetAxis(leftJoyXAxis) < -0.1)
                 facingRight = false;
             
             //Jump
